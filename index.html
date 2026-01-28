@@ -2,135 +2,241 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>결빙의 아버지 - 이수익</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>결빙의 아버지 - Interactive Tribute</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nanum+Myeongjo:wght@400;700&display=swap');
-
-        body {
-            background-color: #0d1117; /* 겨울 밤의 어둠 */
-            color: #c9d1d9;
-            font-family: 'Nanum Myeongjo', serif;
-            display: flex;
-            justify-content: center;
-            padding: 100px 20px;
-            margin: 0;
-            line-height: 2.2;
+        :root {
+            --bg-color: #050a12;
+            --text-color: rgba(255, 255, 255, 0.8);
+            --accent-warm: #ff922b;
+            --accent-cold: #a5d8ff;
         }
 
-        .container {
-            max-width: 700px;
-            text-align: left;
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background-color: var(--bg-color);
+            font-family: 'Nanum Myeongjo', serif;
+            transition: background 1.5s ease;
+        }
+
+        /* 배경 레이어: 해와 달의 전이 */
+        #canvas-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: -1;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            padding: 100px 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 150px;
         }
 
         .title {
-            font-size: 2rem;
-            color: #58a6ff;
-            text-align: center;
-            margin-bottom: 80px;
-            letter-spacing: 8px;
-            opacity: 0.8;
+            font-size: 3rem;
+            letter-spacing: 15px;
+            color: var(--accent-cold);
+            text-shadow: 0 0 20px rgba(165, 216, 255, 0.5);
         }
 
-        /* 시의 각 단락 또는 구절 */
-        .passage {
-            margin-bottom: 40px;
-            transition: all 0.5s ease;
-            position: relative;
-            padding-left: 20px;
-            border-left: 2px solid transparent;
+        /* 시 구절 섹션 */
+        .verse-section {
+            max-width: 600px;
+            margin-bottom: 200px;
+            opacity: 0;
+            transform: translateY(50px);
+            transition: all 1.2s ease;
         }
 
-        /* 마우스 오버 시 효과 */
-        .passage:hover {
-            color: #ffffff;
-            border-left: 2px solid #f0883e; /* 아버지의 온기 색상 */
-            transform: translateX(10px);
-            text-shadow: 0 0 10px rgba(240, 136, 62, 0.3);
-        }
-
-        /* 핵심 구절 (결빙의 이미지) */
-        .highlight {
-            font-weight: 700;
-            color: #8b949e;
-            transition: color 0.6s ease;
-        }
-
-        .passage:hover .highlight {
-            color: #f0883e; /* 마우스를 올리면 얼음 아래 진심이 드러남 */
-        }
-
-        .footer {
-            margin-top: 100px;
-            text-align: center;
-            font-size: 0.9rem;
-            color: #484f58;
-            letter-spacing: 2px;
-        }
-
-        /* 마지막 외침 효과 */
-        .final-call {
-            font-size: 1.4rem;
-            margin-top: 60px;
-            text-align: right;
-            opacity: 0.5;
-            transition: all 1s ease;
-        }
-
-        .final-call:hover {
+        .verse-section.visible {
             opacity: 1;
-            color: #ff7b72;
-            letter-spacing: 5px;
+            transform: translateY(0);
+        }
+
+        .verse-text {
+            font-size: 1.2rem;
+            line-height: 2.5;
+            color: var(--text-color);
+            cursor: pointer;
+        }
+
+        /* 마우스 호버 시 텍스트가 물처럼 흐르거나 얼음처럼 깨지는 느낌 */
+        .verse-text span {
+            display: inline-block;
+            transition: transform 0.3s ease, color 0.3s ease;
+        }
+
+        .verse-text span:hover {
+            color: var(--accent-warm);
+            transform: scale(1.1) rotate(-2deg);
+        }
+
+        .highlight {
+            font-weight: bold;
+            color: var(--accent-cold);
+            border-bottom: 1px solid rgba(165, 216, 255, 0.3);
+        }
+
+        footer {
+            margin-top: 100px;
+            color: rgba(255,255,255,0.3);
+            font-size: 0.9rem;
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <div class="title">결빙의 아버지</div>
+    <canvas id="canvas-bg"></canvas>
 
-    <div class="passage">
-        어머님,<br>
-        제 예닐곱 살 적 겨울은<br>
-        목조 적산 가옥 이층 다다미방의<br>
-        벌거숭이 유리창 깨질 듯 울어 대던 외풍 탓으로<br>
-        한없이 추웠지요, 밤마다 나는 벌벌 떨면서<br>
-        <span class="highlight">아버지 가랭이 사이로 시린 발을 밀어 넣고</span><br>
-        그 가슴팍에 벌레처럼 파고들어 얼굴을 묻은 채<br>
-        겨우 잠이 들곤 했었지요.
+    <div class="content">
+        <header>
+            <div class="title">결빙의 아버지</div>
+            <p style="color:rgba(255,255,255,0.4)">Scroll to explore the memory</p>
+        </header>
+
+        <section class="verse-section">
+            <p class="verse-text">
+                어머님,<br>
+                제 예닐곱 살 적 겨울은<br>
+                목조 적산 가옥 이층 다다미방의<br>
+                벌거숭이 유리창 깨질 듯 울어 대던 외풍 탓으로<br>
+                한없이 추웠지요...
+            </p>
+        </section>
+
+        <section class="verse-section">
+            <p class="verse-text">
+                밤마다 나는 벌벌 떨면서<br>
+                <span class="highlight">아버지 가랭이 사이로 시린 발을 밀어 넣고</span><br>
+                그 가슴팍에 벌레처럼 파고들어 얼굴을 묻은 채<br>
+                겨우 잠이 들곤 했었지요.
+            </p>
+        </section>
+
+        <section class="verse-section">
+            <p class="verse-text">
+                오늘은 영하(零下)의 한강교를 지나면서 문득<br>
+                나를 품에 안고 추위를 막아 주던<br>
+                예닐곱 살 적 그 겨울밤의 아버지가<br>
+                <span class="highlight">이승의 물로 화신(化身)해 있음을 보았습니다.</span>
+            </p>
+        </section>
+
+        <section class="verse-section">
+            <p class="verse-text" style="font-size: 1.5rem; color: #fff;">
+                꽝 꽝 얼어붙은 잔등으로 혹한을 막으며<br>
+                <span style="color: var(--accent-warm);">하얗게 얼음으로 엎드려 있던 아버지,</span><br><br>
+                아버지, 아버지……
+            </p>
+        </section>
+
+        <footer>이수익, 「결빙의 아버지」</footer>
     </div>
 
-    <div class="passage">
-        요즈음도 추운 밤이면<br>
-        곁에서 잠든 아이들 이불깃을 덮어 주며<br>
-        늘 그런 추억으로 마음이 아프고,<br>
-        나를 품어 주던 그 가슴이 이제는 한 줌 뼛가루로 삭아<br>
-        붉은 흙에 자취 없이 뒤섞여 있음을 생각하면<br>
-        <span class="highlight">옛날처럼 나는 다시 아버지 곁에 눕고 싶습니다.</span>
-    </div>
+    <script>
+        const canvas = document.getElementById('canvas-bg');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let mouse = { x: null, y: null };
 
-    <div class="passage">
-        그런데 어머님,<br>
-        오늘은 영하(零下)의 한강교를 지나면서 문득<br>
-        나를 품에 안고 추위를 막아 주던<br>
-        예닐곱 살 적 그 겨울밤의 아버지가<br>
-        이승의 물로 화신(化身)해 있음을 보았습니다.
-    </div>
+        // 캔버스 크기 조절
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resize);
+        resize();
 
-    <div class="passage">
-        품 안에 부드럽고 여린 물살은 무사히 흘러<br>
-        바다로 가라고,<br>
-        <span class="highlight">꽝 꽝 얼어붙은 잔등으로 혹한을 막으며<br>
-        하얗게 얼음으로 엎드려 있던 아버지,</span>
-    </div>
+        // 마우스 감지
+        window.addEventListener('mousemove', (e) => {
+            mouse.x = e.x;
+            mouse.y = e.y;
+            
+            // 배경색 변화 (해/달 테마 전환 시뮬레이션)
+            const ratio = e.y / window.innerHeight;
+            const blue = Math.floor(10 + ratio * 40);
+            document.body.style.backgroundColor = `rgb(5, ${blue/2}, ${blue})`;
+        });
 
-    <div class="final-call">
-        아버지, 아버지……
-    </div>
+        // 얼음 입자 클래스 (김종민 스타일의 Particle System)
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height;
+                this.size = Math.random() * 3 + 1;
+                this.speedX = Math.random() * 1 - 0.5;
+                this.speedY = Math.random() * 1 - 0.5;
+            }
+            update() {
+                this.x += this.speedX;
+                this.y += this.speedY;
+                
+                // 마우스 근처에서 밀려나는 인터렉션
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx*dx + dy*dy);
+                if (distance < 100) {
+                    this.x -= dx/20;
+                    this.y -= dy/20;
+                }
+            }
+            draw() {
+                ctx.fillStyle = 'rgba(165, 216, 255, 0.5)';
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
 
-    <div class="footer">
-        이수익, 「결빙의 아버지」 전문
-    </div>
-</div>
+        function init() {
+            for (let i = 0; i < 100; i++) {
+                particles.push(new Particle());
+            }
+        }
 
+        function animate() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 물결/얼음 입자 그리기
+            particles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+
+            // "해/달" 효과: 마우스 위치에 부드러운 광원
+            const gradient = ctx.createRadialGradient(mouse.x, mouse.y, 50, mouse.x, mouse.y, 300);
+            gradient.addColorStop(0, 'rgba(255, 146, 43, 0.1)'); // 따뜻한 온기
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0,0, canvas.width, canvas.height);
+
+            requestAnimationFrame(animate);
+        }
+
+        // 스크롤 시 섹션 나타나기 (Intersection Observer)
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('visible');
+            });
+        }, { threshold: 0.3 });
+
+        document.querySelectorAll('.verse-section').forEach(section => observer.observe(section));
+
+        init();
+        animate();
+    </script>
 </body>
 </html>
